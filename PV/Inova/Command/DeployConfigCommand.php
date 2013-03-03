@@ -31,10 +31,6 @@ class DeployConfigCommand extends DeployCommand
         $option = $input->getOption('opcao');
         $config_data = $config = [];
 
-        if ($option === 'root' || $option === 'tudo') {
-            $config['root'] = $this->askRoot($output);
-        }
-
         if ($option === 'servers' || $option === 'tudo') {
             $config['servers'] = $this->askServers($output);
         }

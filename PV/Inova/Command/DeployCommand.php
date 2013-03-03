@@ -19,11 +19,6 @@ class DeployCommand extends Command
                 Local da Inova.'
             )
             ->addArgument(
-                'repositorio',
-                InputArgument::REQUIRED,
-                'Qual o caminho do repositório do GIT?'
-            )
-            ->addArgument(
                 'nome-servidor',
                 InputArgument::REQUIRED,
                 'Qual o nome do servidor?'
@@ -33,6 +28,11 @@ class DeployCommand extends Command
                 InputArgument::REQUIRED,
                 'Qual o destino no servidor?'
             )
+            ->addArgument(
+                'commit',
+                InputArgument::OPTIONAL,
+                'Número do commit?'
+            )
         ;
     }
 
@@ -40,11 +40,11 @@ class DeployCommand extends Command
     {
         $config = $this->getConfig($output);
 
-        $repository = $input->getArgument('repositorio');
         $server_name = $input->getArgument('nome-servidor');
         $destination_dir = $input->getArgument('destino');
+        $commit = $input->getArgument('commit');
 
-        $repository = $config->root . DIRECTORY_SEPARATOR . $repository;
+        $repository = './';
 
         if ( ! is_dir($repository)) {
             throw new \RunTimeException('Este repositório não existe!');
@@ -57,11 +57,11 @@ class DeployCommand extends Command
         $client = new Gitter;
         $repository = $client->getRepository($repository);
 
-        $last_commit = $repository->getCommits()[0];
+        $commit = $commit ?: $repository->getCommits()[0]->getHash();
 
         $changed = array_filter(explode("\n", $client->run(
             $repository, 
-            'show --pretty="format:" --name-only '.$last_commit->getHash()
+            'show --pretty="format:" --name-only '.$commit
         )));
 
         if (empty($changed))
@@ -75,12 +75,10 @@ class DeployCommand extends Command
         $dialog = $this->getHelperSet()->get('dialog');
 
         if ( ! is_file('config.json')) {
-            $root = $this->askRoot($output);
             $servers = $this->askServers($output);
             //$projects = $this->askProjects($output); TODO: Implementar controle de projetos
 
             $config = [
-                'root'    => $root,
                 'servers' => $servers
             ];
 
@@ -88,26 +86,6 @@ class DeployCommand extends Command
         }
 
         return json_decode(file_get_contents('config.json'));
-    }
-
-    protected function askRoot(OutputInterface $output)
-    {
-        $dialog = $this->getHelperSet()->get('dialog');
-        
-        return $dialog->askAndValidate(
-            $output,
-            '<question>Informe o diretório raiz das suas aplicações? [/home/www]</question> ',
-            function ($answer) {
-                if ( ! is_dir($answer)) {
-                    throw new \RunTimeException(
-                        'Este não é um diretório válido!'
-                    );
-                }
-                return $answer;
-            },
-            true,
-            '/home/www'
-        );
     }
 
     protected function askServers(OutputInterface $output)

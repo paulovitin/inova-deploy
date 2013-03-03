@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 # app/console
 <?php
-require 'vendor/autoload.php';
+require __DIR__.'/vendor/autoload.php';
 use PV\Inova\Command\DeployCommand;
 use PV\Inova\Command\DeployConfigCommand;
 use Symfony\Component\Console\Application;
