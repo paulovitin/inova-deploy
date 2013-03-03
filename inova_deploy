@@ -1,0 +1,12 @@
+#!/usr/bin/env php
+# app/console
+<?php
+require 'vendor/autoload.php';
+use PV\Inova\Command\DeployCommand;
+use PV\Inova\Command\DeployConfigCommand;
+use Symfony\Component\Console\Application;
+
+$application = new Application();
+$application->add(new DeployCommand);
+$application->add(new DeployConfigCommand);
+$application->run();
